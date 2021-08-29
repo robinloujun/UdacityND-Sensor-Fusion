@@ -5,7 +5,7 @@
 #include "measurement_package.h"
 
 class UKF {
- public:
+public:
   /**
    * Constructor
    */
@@ -41,7 +41,6 @@ class UKF {
    */
   void UpdateRadar(MeasurementPackage meas_package);
 
-
   // initially set to false, set to true in first call of ProcessMeasurement
   bool is_initialized_;
 
@@ -75,6 +74,12 @@ class UKF {
   // Laser measurement noise standard deviation position2 in m
   double std_laspy_;
 
+  // Measurement noise covariance matrix for laser measurement
+  Eigen::MatrixXd R_laser_;
+
+  // Measurement dimension of laser measurement
+  int n_lidar_;
+
   // Radar measurement noise standard deviation radius in m
   double std_radr_;
 
@@ -82,7 +87,13 @@ class UKF {
   double std_radphi_;
 
   // Radar measurement noise standard deviation radius change in m/s
-  double std_radrd_ ;
+  double std_radrd_;
+
+  // Measurement dimension of radar measurement
+  int n_radar_;
+
+  // Measurement noise covariance matrix for radar measurement
+  Eigen::MatrixXd R_radar_;
 
   // Weights of sigma points
   Eigen::VectorXd weights_;
@@ -95,6 +106,9 @@ class UKF {
 
   // Sigma point spreading parameter
   double lambda_;
+
+  // Verbose tag
+  bool verbose_;
 };
 
-#endif  // UKF_H
+#endif // UKF_H
