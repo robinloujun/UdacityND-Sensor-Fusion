@@ -125,7 +125,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
       P_(2, 2) = 100.0;
       P_(3, 3) = 100.0;
-
     }
 
     if (verbose_) {
