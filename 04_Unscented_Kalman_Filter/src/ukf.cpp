@@ -37,10 +37,10 @@ UKF::UKF() {
   P_ = MatrixXd(5, 5);
 
   // Process noise standard deviation longitudinal acceleration in m/s^2
-  std_a_ = 5.0;
+  std_a_ = 1.0;
 
   // Process noise standard deviation yaw acceleration in rad/s^2
-  std_yawdd_ = 5.0;
+  std_yawdd_ = 0.5;
 
   /**
    * DO NOT MODIFY measurement noise values below.
@@ -90,7 +90,7 @@ UKF::UKF() {
   R_radar_(1, 1) = std_radphi_ * std_radphi_;
   R_radar_(2, 2) = std_radrd_ * std_radrd_;
 
-  verbose_ = true;
+  verbose_ = false;
 
   if (verbose_) {
     std::cout << "Init States" << std::endl;
@@ -104,15 +104,12 @@ UKF::~UKF() {}
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
   if (!is_initialized_) {
     x_.fill(0.0);
-    P_.fill(0.0);
+    P_ = MatrixXd::Identity(P_.rows(), P_.cols());
     if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
       x_.head(n_lidar_) = meas_package.raw_measurements_.head(n_lidar_);
 
       P_(0, 0) = std_laspx_ * std_laspx_;
       P_(1, 1) = std_laspy_ * std_laspy_;
-      P_(2, 2) = 1.0;
-      P_(3, 3) = 1.0;
-      P_(4, 4) = 1.0;
     } else if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
       double rho = meas_package.raw_measurements_(0);
       double phi = meas_package.raw_measurements_(1);
@@ -126,11 +123,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
       x_.head(3) << p_x, p_y, vel;
 
-      P_(0, 0) = std_radr_ * std_radr_;
-      P_(1, 1) = std_radr_ * std_radr_;
-      P_(2, 2) = std_radrd_ * std_radrd_;
-      P_(3, 3) = std_radphi_;
-      P_(4, 4) = std_radphi_;
+      P_(2, 2) = 100.0;
+      P_(3, 3) = 100.0;
+
     }
 
     if (verbose_) {
