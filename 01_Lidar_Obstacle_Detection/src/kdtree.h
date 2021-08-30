@@ -1,14 +1,19 @@
 /* \author Aaron Brown */
+#include <pcl/common/distances.h>
+#include <pcl/point_types.h>
+#include <pcl/types.h>
 #include <stdexcept>
+#include <vector>
 
 // Structure to represent node of kd tree
-template <typename PointT> struct Node {
-  typename PointT point;
+template <typename PointT> 
+struct Node {
+  PointT point;
   int id;
   Node *left;
   Node *right;
 
-  Node(typename PointT arr, int setId)
+  Node(PointT arr, int setId)
       : point(arr), id(setId), left(NULL), right(NULL) {}
 
   ~Node() {
@@ -17,32 +22,51 @@ template <typename PointT> struct Node {
   }
 };
 
-template <typename PointT> struct KdTree {
-  int dimension;
-  Node *root;
+template <typename PointT> 
+struct KdTree {
+  Node<PointT> *root;
 
-  KdTree(int dim) : root(NULL), dimension(dim) {}
+  KdTree() : root(NULL) {}
 
   ~KdTree() { delete root; }
 
-  void insertHelper(Node **node, uint depth, typename PointT point, int id) {
+  void insertHelper(Node<PointT> **node, uint depth, PointT point, int id) {
     if (*node == nullptr) {
-      *node = new Node(point, id);
+      *node = new Node<PointT>(point, id);
     } else {
-      uint current_dim = depth % dimension;
-      if (point[current_dim] < (*node)->point[current_dim])
-        insertHelper(&((*node)->left), depth + 1, point, id);
-      else
-        insertHelper(&((*node)->right), depth + 1, point, id);
+      uint current_dim = depth % 3;
+      switch (current_dim) {
+      case 0: {
+        if (point.x < (*node)->point.x)
+          insertHelper(&((*node)->left), depth + 1, point, id);
+        else
+          insertHelper(&((*node)->right), depth + 1, point, id);
+        break;
+      }
+      case 1: {
+        if (point.y < (*node)->point.y)
+          insertHelper(&((*node)->left), depth + 1, point, id);
+        else
+          insertHelper(&((*node)->right), depth + 1, point, id);
+        break;
+      }
+      case 2: {
+        if (point.z < (*node)->point.z)
+          insertHelper(&((*node)->left), depth + 1, point, id);
+        else
+          insertHelper(&((*node)->right), depth + 1, point, id);
+        break;
+      }
+      }
     }
   }
 
-  void insert(typename PointT point, int id) {
+  void insert(PointT point, int id) {
     // insert a new point into the tree
     insertHelper(&root, 0, point, id);
   }
 
-  void searchHelper(typename PointT target, Node *node, uint depth,
+  void searchHelper(PointT target, Node<PointT> *node, uint depth,
                     float distanceTol, std::vector<int> &ids) {
     if (node != NULL) {
       if (fabs(target.x - node->point.x) <= distanceTol &&
@@ -54,16 +78,35 @@ template <typename PointT> struct KdTree {
           ids.push_back(node->id);
       }
 
-      uint current_dim = depth % dimension;
-      if ((target[current_dim] - distanceTol) < node->point[current_dim])
-        searchHelper(target, node->left, depth + 1, distanceTol, ids);
-      if ((target[current_dim] + distanceTol) > node->point[current_dim])
-        searchHelper(target, node->right, depth + 1, distanceTol, ids);
+      uint current_dim = depth % 3;
+      switch (current_dim) {
+      case 0: {
+        if ((target.x - distanceTol) < node->point.x)
+          searchHelper(target, node->left, depth + 1, distanceTol, ids);
+        if ((target.x + distanceTol) > node->point.x)
+          searchHelper(target, node->right, depth + 1, distanceTol, ids);
+        break;
+      }
+      case 1: {
+        if ((target.y - distanceTol) < node->point.y)
+          searchHelper(target, node->left, depth + 1, distanceTol, ids);
+        if ((target.y + distanceTol) > node->point.y)
+          searchHelper(target, node->right, depth + 1, distanceTol, ids);
+        break;
+      }
+      case 2: {
+        if ((target.z - distanceTol) < node->point.z)
+          searchHelper(target, node->left, depth + 1, distanceTol, ids);
+        if ((target.z + distanceTol) > node->point.z)
+          searchHelper(target, node->right, depth + 1, distanceTol, ids);
+        break;
+      }
+      }
     }
   }
 
   // return a list of point ids in the tree that are within distance of target
-  std::vector<int> search(typename PointT target, float distanceTol) {
+  std::vector<int> search(PointT target, float distanceTol) {
     std::vector<int> ids;
     searchHelper(target, root, 0, distanceTol, ids);
     return ids;
