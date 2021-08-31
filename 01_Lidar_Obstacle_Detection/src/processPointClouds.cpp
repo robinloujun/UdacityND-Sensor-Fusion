@@ -238,7 +238,7 @@ std::unordered_set<int> RansacPlane(typename pcl::PointCloud<PointT>::Ptr cloud,
   float a, b, c, d;
 
   // For max iterations
-  while (maxIterations--) {
+  for (int i = 0; i < maxIterations; ++i) {
     // Randomly sample subset and fit plane
     std::unordered_set<int> inliers;
     while (inliers.size() < 3)
@@ -277,7 +277,6 @@ std::unordered_set<int> RansacPlane(typename pcl::PointCloud<PointT>::Ptr cloud,
       if (dist < distanceTol)
         inliers.insert(i);
     }
-
     if (inliers.size() > inliersResult.size())
       inliersResult = inliers;
   }
